@@ -1,0 +1,157 @@
+#!/usr/bin/env python
+
+# Future imports
+from __future__ import print_function
+
+# STDLib Imports
+import sys
+import time
+
+# Third-Party Imports
+import json
+import requests
+import pango
+import gtk
+
+# Local Imports
+
+class InquireApp(object):
+    ''' Main Class for the Inquire '''
+
+    def __init__(self):
+        ''' Initializer for InquireApp '''
+
+        # Define Handler map
+        handlers = {
+            "onDeleteWindow":   gtk.main_quit,
+            "onExitEvent":      self.onDeleteEvent,
+            "onSendEvent":      self.onSendEvent,
+            "onDataAddEvent":   self.onDataAddEvent,
+            "onActionChangedEvent": self.onActionChangedEvent,
+            "onNotebookChangeCurrentPageEvent":
+                self.onNotebookChangeCurrentPageEvent,
+        }
+
+        # Create the window instance
+        self.gladeFile = 'inquire_ui.glade'
+        self.gtkBuilder = gtk.Builder()
+        self.gtkBuilder.add_from_file(self.gladeFile)
+        self.gtkBuilder.connect_signals(handlers)
+        self.gtkApp = self.gtkBuilder.get_object('application')
+        self.responseText = self.gtkBuilder.get_object('response_textview')
+        self.responseText.get_buffer().set_text('Response Text goes here...')
+
+        # Finesse the window instance
+        fixed_font = pango.FontDescription('monospace')
+        self.responseText.modify_font(fixed_font)
+
+        # Initialize the values for our lists
+        self.paramsList = []
+        self.headerList = []
+
+    def __log_event(self, widget, **kwargs):
+        ''' Used for logging the rolling events '''
+        if widget is None and kwargs['text'] is not None:
+            print(kwargs['text'])
+        elif type(widget) is gtk.ComboBox:
+            print("The '{0}' option was selected".format(
+                                                widget.get_active_text()))
+        elif type(widget) is gtk.Button:
+            print("{0} triggered!".format(widget.get_label()))
+        else:
+            print("Received a '{0}' as the widget".format(widget))
+
+    def __generateHeaders(self):
+        ''' Convert the headerList attribute into a usable dict '''
+        return dict(self.headerList)
+
+    def __generatePayload(self):
+        ''' Convert the paramsList attribute into a usable dict '''
+        return dict(self.paramsList)
+
+    def __generateURL(self):
+        ''' Determines the URL we're Inquiring against '''
+        host = self.gtkBuilder.get_object('host_entry').get_text()
+        port = int(self.gtkBuilder.get_object('port_spinner').get_value())
+        return "{0}:{1}".format(host, port)
+
+    def __determineMethod(self):
+        '''
+            Determine the selected HTTP action and pick the appropriate
+            method from requests
+        '''
+        return self.gtkBuilder.get_object('action_combo').get_active_text()
+
+    def __getResponseText(self, response):
+        '''
+            Get the response text from a HTTP response
+        '''
+        return response.text
+
+    def __setResponseText(self, text):
+        '''
+            Set the response TextView helper method
+        '''
+        self.responseText.get_buffer().set_text(text)
+
+    def onNotebookChangeCurrentPageEvent(self, widget):
+        '''
+            onNotebookChangeCurrentPageEvent Callback:
+            Used for determining which ListStore we should be adding
+            data to when the Add button is pressed. The select event
+            allows us to change an attribute each time we switch stores
+            with the user. Triggered anytime a new tab is activated
+        '''
+        self.__log_event(widget)
+
+    def onActionChangedEvent(self, widget):
+        '''
+           onActionChangedEvent Callback:
+           Used for determining which HTTP action we'll be executing on
+           each request. Triggered when a new item is selected from the
+           drop down widget.
+        '''
+        self.__log_event(widget)
+
+    def onDeleteEvent(self, widget):
+        '''
+            onDeleteEvent Callback:
+            Used for killing the application. Triggered when the window
+            closes or the Exit menu-item/button is hit.
+        '''
+        self.__log_event(widget)
+        gtk.main_quit()
+
+    def onSendEvent(self, widget):
+        '''
+            onSendEvent Callback:
+            Used for executing the actual HTTP request. Triggered when
+            the 'Send' button is hit.
+        '''
+        self.__log_event(widget)
+        url     = self.__generateURL()
+        headers = self.__generateHeaders()
+        payload = self.__generatePayload()
+        method  = self.__determineMethod()
+        self.__log_event(None, text="Making a {0} against {1}".format(method, url))
+        r = requests.request(method, url, data=json.dumps(payload), headers=headers)
+        self.__setResponseText(self.__getResponseText(r))
+
+    def onDataAddEvent(self, widget):
+        '''
+            onDataAddEvent Callback:
+            Used for adding the information in the key/value fields to add
+            data to the appropriate ListStores. Triggered when the 'Add'
+            button is hit
+        '''
+        # TODO Add code to assert the validity of the fields of the Key
+        # TODO Add code to assert the validity of the fields of the Value
+        self.__log_event(widget)
+
+
+if __name__ == '__main__':
+    ia = InquireApp()
+    ia.gtkApp.show()
+    gtk.main()
+else:
+    print("Loaded Inspire!", file=sys.stderr)
