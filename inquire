@@ -69,13 +69,6 @@ class InquireApp(object):
         ''' Convert the paramsList attribute into a usable dict '''
         return dict(self.paramsList)
 
-    def __determineMethod(self):
-        '''
-            Determine the selected HTTP action and pick the appropriate
-            method from requests
-        '''
-        return self.gtkBuilder.get_object('action_combo').get_active_text()
-
     def __getResponseText(self, response):
         '''
             Get the response text from a HTTP response
@@ -126,7 +119,7 @@ class InquireApp(object):
         url     = self.gtkBuilder.get_object('host_entry').get_text()
         headers = self.__generateHeaders()
         payload = self.__generatePayload()
-        method  = self.__determineMethod()
+        method  = self.gtkBuilder.get_object('action_combo').get_active_text()
         self.__log_event(None, text="Making a {0} against {1}".format(method, url))
         r = requests.request(method, url, data=json.dumps(payload), headers=headers)
         self.__setResponseText(self.__getResponseText(r))
