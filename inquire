@@ -69,12 +69,6 @@ class InquireApp(object):
         ''' Convert the paramsList attribute into a usable dict '''
         return dict(self.paramsList)
 
-    def __generateURL(self):
-        ''' Determines the URL we're Inquiring against '''
-        host = self.gtkBuilder.get_object('host_entry').get_text()
-        port = int(self.gtkBuilder.get_object('port_spinner').get_value())
-        return "{0}:{1}".format(host, port)
-
     def __determineMethod(self):
         '''
             Determine the selected HTTP action and pick the appropriate
@@ -129,7 +123,7 @@ class InquireApp(object):
             the 'Send' button is hit.
         '''
         self.__log_event(widget)
-        url     = self.__generateURL()
+        url     = self.gtkBuilder.get_object('host_entry').get_text()
         headers = self.__generateHeaders()
         payload = self.__generatePayload()
         method  = self.__determineMethod()
