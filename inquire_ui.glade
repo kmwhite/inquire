@@ -532,5 +532,7 @@
   <object class="GtkTextBuffer" id="response_textbuffer"/>
   <object class="GtkStatusIcon" id="tray_icon">
     <property name="stock">gtk-find</property>
+    <property name="has_tooltip">True</property>
+    <property name="tooltip_text" translatable="yes">Inquire - An HTTP Response Examiner</property>
   </object>
 </interface>
