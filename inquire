@@ -46,7 +46,7 @@ class InquireApp(object):
         self.responseText.modify_font(fixed_font)
 
         # Initialize the values for our lists
-        self.currentList = ''
+        self.currentList = self.__determineCurrentPage().get_text()
         self.paramsList = []
         self.headerList = []
 
@@ -71,6 +71,16 @@ class InquireApp(object):
     def __generatePayload(self):
         ''' Convert the paramsList attribute into a usable dict '''
         return dict(self.paramsList)
+
+    def __determineCurrentPage(self, notebook = None, **kwargs):
+        ''' Determines the current page for a notebook '''
+        if notebook is None:
+            notebook = self.gtkBuilder.get_object('payload_notebook')
+        if kwargs.get('page', None) is not None:
+            page = kwargs['page']
+        else:
+            page = notebook.get_current_page()
+        return notebook.get_tab_label(notebook.get_nth_page(page))
 
     def __getResponseText(self, response):
         '''
@@ -102,7 +112,7 @@ class InquireApp(object):
             allows us to change an attribute each time we switch stores
             with the user. Triggered anytime a new tab is activated
         '''
-        label = widget.get_tab_label(widget.get_nth_page(page_number))
+        label = self.__determineCurrentPage(widget, page=page_number)
         self.currentList=label.get_text()
         self.__log_event(widget, label=self.currentList)
 
@@ -149,6 +159,9 @@ class InquireApp(object):
         # TODO Add code to assert the validity of the fields of the Key
         # TODO Add code to assert the validity of the fields of the Value
         self.__log_event(widget)
+        self.__log_event(None,
+                text="Adding a key-value pair to the {0} list".format(
+                self.currentList))
 
 
 if __name__ == '__main__':
