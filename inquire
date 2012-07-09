@@ -50,6 +50,9 @@ class InquireApp(object):
         self.paramsList = []
         self.headerList = []
 
+        # HTTP Action Stuff
+        self.currentAction = self.__determineCurrentAction()
+
     def __log_event(self, widget, **kwargs):
         ''' Used for logging the rolling events '''
         if widget is None and kwargs['text'] is not None:
@@ -81,6 +84,11 @@ class InquireApp(object):
         else:
             page = notebook.get_current_page()
         return notebook.get_tab_label(notebook.get_nth_page(page))
+
+    def __determineCurrentAction(self, combo = None, **kwargs):
+        if combo is None:
+            combo = self.gtkBuilder.get_object('action_combo')
+        return combo.get_active_text()
 
     def __getResponseText(self, response):
         '''
@@ -124,6 +132,7 @@ class InquireApp(object):
            drop down widget.
         '''
         self.__log_event(widget)
+        self.currentAction = self.__determineCurrentAction(widget)
 
     def onDeleteEvent(self, widget):
         '''
@@ -144,7 +153,7 @@ class InquireApp(object):
         url     = self.gtkBuilder.get_object('host_entry').get_text()
         headers = self.__generateHeaders()
         payload = self.__generatePayload()
-        method  = self.gtkBuilder.get_object('action_combo').get_active_text()
+        method = self.currentAction
         self.__log_event(None, text="Making a {0} against {1}".format(method, url))
         r = requests.request(method, url, data=json.dumps(payload), headers=headers)
         self.__setResponseText(self.__getResponseText(r))
