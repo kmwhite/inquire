@@ -4,6 +4,7 @@
 from __future__ import print_function
 
 # STDLib Imports
+import pprint
 import sys
 import time
 
@@ -73,7 +74,17 @@ class InquireApp(object):
         '''
             Get the response text from a HTTP response
         '''
-        return response.text
+
+        resptext  = "===> RESPONSE STATUS_CODE:\n"
+        resptext += "{0}\n".format(pprint.pformat(response.status_code))
+        resptext += "\n"
+        resptext += "===> RESPONSE HEADERS:\n"
+        resptext += "{0}\n".format(pprint.pformat(response.headers))
+        resptext += "\n"
+        resptext += "===> RESPONSE PAYLOAD\n"
+        resptext += "{0}\n".format(response.text)
+        resptext += "\n"
+        return resptext
 
     def __setResponseText(self, text):
         '''
