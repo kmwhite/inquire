@@ -302,7 +302,7 @@
                     <property name="height_request">525</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <signal name="change-current-page" handler="onNotebookChangeCurrentPageEvent" swapped="no"/>
+                    <signal name="switch-page" handler="onNotebookSwitchPageEvent" swapped="no"/>
                     <child>
                       <object class="GtkTreeView" id="headers_treeview">
                         <property name="visible">True</property>

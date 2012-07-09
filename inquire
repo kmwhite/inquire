@@ -29,8 +29,7 @@ class InquireApp(object):
             "onSendEvent":      self.onSendEvent,
             "onDataAddEvent":   self.onDataAddEvent,
             "onActionChangedEvent": self.onActionChangedEvent,
-            "onNotebookChangeCurrentPageEvent":
-                self.onNotebookChangeCurrentPageEvent,
+            "onNotebookSwitchPageEvent": self.onNotebookSwitchPageEvent,
         }
 
         # Create the window instance
@@ -47,6 +46,7 @@ class InquireApp(object):
         self.responseText.modify_font(fixed_font)
 
         # Initialize the values for our lists
+        self.currentList = ''
         self.paramsList = []
         self.headerList = []
 
@@ -59,6 +59,8 @@ class InquireApp(object):
                                                 widget.get_active_text()))
         elif type(widget) is gtk.Button:
             print("{0} triggered!".format(widget.get_label()))
+        elif type(widget) is gtk.Notebook:
+            print("The '{0}' tab was selected".format(kwargs['label']))
         else:
             print("Received a '{0}' as the widget".format(widget))
 
@@ -92,15 +94,17 @@ class InquireApp(object):
         '''
         self.responseText.get_buffer().set_text(text)
 
-    def onNotebookChangeCurrentPageEvent(self, widget):
+    def onNotebookSwitchPageEvent(self, widget, pointer, page_number):
         '''
-            onNotebookChangeCurrentPageEvent Callback:
+            onNotebookSwitchPageEvent Callback:
             Used for determining which ListStore we should be adding
             data to when the Add button is pressed. The select event
             allows us to change an attribute each time we switch stores
             with the user. Triggered anytime a new tab is activated
         '''
-        self.__log_event(widget)
+        label = widget.get_tab_label(widget.get_nth_page(page_number))
+        self.currentList=label.get_text()
+        self.__log_event(widget, label=self.currentList)
 
     def onActionChangedEvent(self, widget):
         '''
